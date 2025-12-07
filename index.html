@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -43,7 +42,6 @@
     .chip.Priority{background:linear-gradient(90deg,var(--priority),#f0b63c); color:#4b2f00}
     .chip.Pending{background:linear-gradient(90deg,#ffd8d8,#ffb3b3); color:#6b1a1a}
     .chip.Completed{background:linear-gradient(90deg,#bbf7d0,#86efac); color:#064e3b}
-    .muted-note{font-size:13px;color:var(--muted); margin-top:8px}
   </style>
 </head>
 <body>
@@ -52,92 +50,98 @@
       <h1>Paradigm Architects – Client Status</h1>
     </header>
 
-```
-<div class="card">
-  <input type="text" id="searchBox" placeholder="Search client or service..." />
-  <div class="form-grid">
-    <div>
-      <label>Client Name</label>
-      <input id="clientName" type="text" placeholder="Enter client name" />
-    </div>
+    <div class="card">
+      <input type="text" id="searchBox" placeholder="Search client or service..." />
 
-    <div class="full">
-      <label>Services</label>
-      <div class="services-dropdown">
-        <div id="servicesBtn" class="services-btn">
-          <span id="servicesBtnText">Select services</span>
+      <div class="form-grid">
+        <div>
+          <label>Client Name</label>
+          <input id="clientName" type="text" placeholder="Enter client name" />
         </div>
-        <div id="servicesList" class="services-list">
-          <label><input class="svc" type="checkbox" value="Planning"> Planning</label>
-          <label><input class="svc" type="checkbox" value="Interior"> Interior</label>
-          <label><input class="svc" type="checkbox" value="Civil"> Civil</label>
-          <label><input class="svc" type="checkbox" value="SketchUp"> SketchUp</label>
+
+        <div class="full">
+          <label>Services</label>
+          <div class="services-dropdown">
+            <div id="servicesBtn" class="services-btn">
+              <span id="servicesBtnText">Select services</span>
+            </div>
+            <div id="servicesList" class="services-list">
+              <label><input class="svc" type="checkbox" value="Planning"> Planning</label>
+              <label><input class="svc" type="checkbox" value="Interior"> Interior</label>
+              <label><input class="svc" type="checkbox" value="Civil"> Civil</label>
+              <label><input class="svc" type="checkbox" value="SketchUp"> SketchUp</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="full">
+          <label>Description (optional)</label>
+          <input id="initialDescription" type="text" placeholder="Notes / pending work"/>
+        </div>
+
+        <div class="full" style="display:flex; justify-content:flex-end; gap:10px; margin-top:6px">
+          <button class="small" id="clearAll" style="background:#e6eefb;color:#0f62fe;border:1px solid #dbeafe;border-radius:8px">Clear All</button>
+          <button class="simple-btn" id="addBtn">Add</button>
         </div>
       </div>
+
+      <table id="mainTable">
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Service</th>
+            <th>Status</th>
+            <th>Description</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
     </div>
-
-    <div class="full">
-      <label>Description (optional)</label>
-      <input id="initialDescription" type="text" placeholder="Notes / pending work"/>
-    </div>
-
-    <div class="full" style="display:flex; justify-content:flex-end; gap:10px; margin-top:6px">
-      <button class="small" id="clearAll" style="background:#e6eefb;color:#0f62fe;border:1px solid #dbeafe;border-radius:8px">Clear All</button>
-      <button class="simple-btn" id="addBtn">Add</button>
-    </div>
-  </div>
-
-  <table id="mainTable">
-    <thead>
-      <tr>
-        <th>Client</th>
-        <th>Service</th>
-        <th>Status</th>
-        <th>Description</th>
-        <th>Delete</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-</div>
-```
-
   </div>
 
 <script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzfr918MKmQFXEfQYz5OMMldKVMqKjmsWGWj4M4XTqL65KvG27m_fwqlsSeRjep3XRHJw/exec";
+
+// ✔ YOUR ACTIVE GOOGLE APPS SCRIPT URL
+const GAS_URL =
+"https://script.google.com/macros/s/AKfycbxyDfbLC0R2yS9MFwlEluA6VPZiWQafZaDzxdqxiNXdkyfJJuhC9LfYl5WXxB3IRHi4wg/exec";
 
 let entries = [];
 
-async function loadData(){
-  try{
+async function loadData() {
+  try {
     const res = await fetch(GAS_URL, {
       method: "POST",
-      body: JSON.stringify({action:"load"}),
-      headers: {"Content-Type":"application/json"}
+      body: JSON.stringify({ action: "load" }),
+      headers: { "Content-Type": "application/json" }
     });
+
     const result = await res.json();
     entries = result.data || [];
     render();
-  }catch(e){ console.error("Load failed", e);}
+  } catch (e) {
+    console.error("Load failed:", e);
+  }
 }
 
-async function saveData(){
-  try{
+async function saveData() {
+  try {
     const res = await fetch(GAS_URL, {
-      method:"POST",
-      body: JSON.stringify({action:"save", data: entries}),
-      headers: {"Content-Type":"application/json"}
+      method: "POST",
+      body: JSON.stringify({ action: "save", data: entries }),
+      headers: { "Content-Type": "application/json" }
     });
+
     const result = await res.json();
-    if(result.status!=="success") console.error(result.message);
-  }catch(e){ console.error("Save failed", e);}
+    if (result.status !== "success") console.error(result.message);
+  } catch (e) {
+    console.error("Save failed:", e);
+  }
 }
 
-function uid(){ return "id-" + Math.random().toString(36).slice(2,9); }
+function uid() { return "id-" + Math.random().toString(36).slice(2, 9); }
 
-/* UI Elements */
 const tbody = document.querySelector("tbody");
 const searchBox = document.getElementById("searchBox");
 const servicesBtn = document.getElementById("servicesBtn");
@@ -145,78 +149,138 @@ const servicesList = document.getElementById("servicesList");
 const servicesBtnText = document.getElementById("servicesBtnText");
 const svcCheckboxes = () => Array.from(document.querySelectorAll(".svc"));
 
-servicesBtn.addEventListener("click", ()=>{servicesList.style.display = servicesList.style.display==="block"?"none":"block";});
-document.addEventListener("click",(e)=>{if(!servicesBtn.contains(e.target) && !servicesList.contains(e.target)){servicesList.style.display="none";}});
-function updateServicesBtnText(){const checked=svcCheckboxes().filter(c=>c.checked).map(c=>c.value); servicesBtnText.textContent = checked.length?checked.join(", "):"Select services";}
-svcCheckboxes().forEach(c=>c.addEventListener("change", updateServicesBtnText));
+servicesBtn.addEventListener("click", () => {
+  servicesList.style.display =
+    servicesList.style.display === "block" ? "none" : "block";
+});
 
-function severityRank(s){if(s==="Priority") return 1;if(s==="Pending") return 2; return 3;}
-function clientSeverity(clientName){const list=entries.filter(e=>e.client===clientName); if(list.some(e=>e.status==="Priority")) return "Priority"; if(list.some(e=>e.status==="Pending")) return "Pending"; return "Completed";}
+document.addEventListener("click", (e) => {
+  if (!servicesBtn.contains(e.target) && !servicesList.contains(e.target)) {
+    servicesList.style.display = "none";
+  }
+});
 
-function render(){
+function updateServicesBtnText() {
+  const checked = svcCheckboxes().filter(c => c.checked).map(c => c.value);
+  servicesBtnText.textContent = checked.length ? checked.join(", ") : "Select services";
+}
+svcCheckboxes().forEach(c => c.addEventListener("change", updateServicesBtnText));
+
+function severityRank(s) {
+  if (s === "Priority") return 1;
+  if (s === "Pending") return 2;
+  return 3;
+}
+
+function clientSeverity(client) {
+  const list = entries.filter(e => e.client === client);
+  if (list.some(e => e.status === "Priority")) return "Priority";
+  if (list.some(e => e.status === "Pending")) return "Pending";
+  return "Completed";
+}
+
+function render() {
   let search = searchBox.value.trim().toLowerCase();
-  const clients = [...new Set(entries.map(e=>e.client))];
-  clients.sort((a,b)=>severityRank(clientSeverity(a))-severityRank(clientSeverity(b)) || a.localeCompare(b));
-  let html="";
-  clients.forEach(client=>{
-    let items = entries.filter(e=>e.client===client);
-    items.sort((a,b)=>severityRank(a.status)-severityRank(b.status)||a.service.localeCompare(b.service));
-    items.forEach((row,idx)=>{
-      let match = row.client.toLowerCase().includes(search) || row.service.toLowerCase().includes(search) || (row.description||"").toLowerCase().includes(search);
-      if(!match) return;
-      html+=`
+  const clients = [...new Set(entries.map(e => e.client))];
+
+  clients.sort(
+    (a, b) =>
+      severityRank(clientSeverity(a)) - severityRank(clientSeverity(b)) ||
+      a.localeCompare(b)
+  );
+
+  let html = "";
+  clients.forEach(client => {
+    let items = entries.filter(e => e.client === client);
+    items.sort(
+      (a, b) =>
+        severityRank(a.status) - severityRank(b.status) ||
+        a.service.localeCompare(b.service)
+    );
+
+    items.forEach((row, idx) => {
+      let match =
+        row.client.toLowerCase().includes(search) ||
+        row.service.toLowerCase().includes(search) ||
+        (row.description || "").toLowerCase().includes(search);
+      if (!match) return;
+
+      html += `
         <tr>
-          <td>${idx===0?row.client:""}</td>
+          <td>${idx === 0 ? row.client : ""}</td>
           <td>${row.service}</td>
           <td>
             <select onchange="changeStatus('${row.id}', this.value)">
-              <option ${row.status==="Priority"?"selected":""}>Priority</option>
-              <option ${row.status==="Pending"?"selected":""}>Pending</option>
-              <option ${row.status==="Completed"?"selected":""}>Completed</option>
+              <option ${row.status === "Priority" ? "selected" : ""}>Priority</option>
+              <option ${row.status === "Pending" ? "selected" : ""}>Pending</option>
+              <option ${row.status === "Completed" ? "selected" : ""}>Completed</option>
             </select>
             <span class="chip ${row.status}" style="margin-left:5px">${row.status}</span>
           </td>
-          <td><input type="text" value="${row.description||''}" onchange="changeDesc('${row.id}', this.value)" /></td>
+          <td><input type="text" value="${row.description || ''}" onchange="changeDesc('${row.id}', this.value)" /></td>
           <td><button onclick="delRow('${row.id}')" style="background:#ef4444;color:white;border:none;padding:6px 10px;border-radius:8px">X</button></td>
-        </tr>`;
+        </tr>
+      `;
     });
   });
+
   tbody.innerHTML = html;
 }
 
-function changeStatus(id,v){let x=entries.find(e=>e.id===id); if(!x) return; x.status=v; saveData(); render();}
-function changeDesc(id,v){let x=entries.find(e=>e.id===id); if(!x) return; x.description=v; saveData(); render();}
-function delRow(id){entries = entries.filter(e=>e.id!==id); saveData(); render();}
+function changeStatus(id, v) {
+  let x = entries.find(e => e.id === id);
+  if (!x) return;
+  x.status = v;
+  saveData();
+  render();
+}
 
-document.getElementById("addBtn").addEventListener("click", ()=>{
+function changeDesc(id, v) {
+  let x = entries.find(e => e.id === id);
+  if (!x) return;
+  x.description = v;
+  saveData();
+  render();
+}
+
+function delRow(id) {
+  entries = entries.filter(e => e.id !== id);
+  saveData();
+  render();
+}
+
+document.getElementById("addBtn").addEventListener("click", () => {
   let name = document.getElementById("clientName").value.trim();
   let desc = document.getElementById("initialDescription").value.trim();
-  let selected = svcCheckboxes().filter(c=>c.checked).map(c=>c.value);
-  if(!name){alert("Enter client name"); return;}
-  if(!selected.length){alert("Select at least one service"); return;}
-  selected.forEach(service=>{entries.push({id:uid(), client:name, service, status:"Pending", description:desc});});
+  let selected = svcCheckboxes().filter(c => c.checked).map(c => c.value);
+
+  if (!name) { alert("Enter client name"); return; }
+  if (!selected.length) { alert("Select at least one service"); return; }
+
+  selected.forEach(service => {
+    entries.push({ id: uid(), client: name, service, status: "Pending", description: desc });
+  });
+
   saveData();
-  document.getElementById("clientName").value="";
-  document.getElementById("initialDescription").value="";
-  svcCheckboxes().forEach(c=>c.checked=false);
+
+  document.getElementById("clientName").value = "";
+  document.getElementById("initialDescription").value = "";
+  svcCheckboxes().forEach(c => c.checked = false);
   updateServicesBtnText();
   render();
 });
 
-document.getElementById("clearAll").addEventListener("click", ()=>{
-  if(!confirm("Clear everything?")) return;
-  entries=[];
+document.getElementById("clearAll").addEventListener("click", () => {
+  if (!confirm("Clear everything?")) return;
+  entries = [];
   saveData();
   render();
 });
 
 searchBox.addEventListener("input", render);
 
-/* INITIAL LOAD */
 loadData();
 </script>
 
 </body>
 </html>
-
-
